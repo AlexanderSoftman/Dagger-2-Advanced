@@ -35,52 +35,59 @@ public class MainActivity extends AppCompatActivity {
     RandomUserAdapter mAdapter;
 
     Picasso picasso;
+    RandomUsersApi randomUsersApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        RandomUserComponent daggerRandomUserComponent = DaggerRandomUserComponent.builder()
+                .contextModule(new ContextModule(this))
+                .build();
+        picasso = daggerRandomUserComponent.getPicasso();
+        randomUsersApi = daggerRandomUserComponent.getRandomUserService();
+
         initViews();
 
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        Gson gson = gsonBuilder.create();
+//        GsonBuilder gsonBuilder = new GsonBuilder();
+//        Gson gson = gsonBuilder.create();
 
         Timber.plant(new Timber.DebugTree());
 
-        File cacheFile = new File(this.getCacheDir(), "HttpCache");
-        cacheFile.mkdirs();
+//        File cacheFile = new File(this.getCacheDir(), "HttpCache");
+//        cacheFile.mkdirs();
 
-        Cache cache = new Cache(cacheFile, 10 * 1000 * 1000); //10 MB
+//        Cache cache = new Cache(cacheFile, 10 * 1000 * 1000); //10 MB
 
-        HttpLoggingInterceptor httpLoggingInterceptor = new
-                HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-            @Override
-            public void log(@NonNull String message) {
-                Timber.i(message);
-            }
-        });
+//        HttpLoggingInterceptor httpLoggingInterceptor = new
+//                HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+//            @Override
+//            public void log(@NonNull String message) {
+//                Timber.i(message);
+//            }
+//        });
 
-        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+//        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
 
-        OkHttpClient okHttpClient = new OkHttpClient()
-                .newBuilder()
-                .cache(cache)
-                .addInterceptor(httpLoggingInterceptor)
-                .build();
+//        OkHttpClient okHttpClient = new OkHttpClient()
+//                .newBuilder()
+//                .cache(cache)
+//                .addInterceptor(httpLoggingInterceptor)
+//                .build();
 
-        OkHttp3Downloader okHttpDownloader = new OkHttp3Downloader(okHttpClient);
+//        OkHttp3Downloader okHttpDownloader = new OkHttp3Downloader(okHttpClient);
 
-        picasso = new Picasso.Builder(this).downloader(okHttpDownloader).build();
+//        picasso = new Picasso.Builder(this).downloader(okHttpDownloader).build();
 
-        retrofit = new Retrofit.Builder()
-                .client(okHttpClient)
-                .baseUrl("https://randomuser.me/")
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .build();
+//        retrofit = new Retrofit.Builder()
+//                .client(okHttpClient)
+//                .baseUrl("https://randomuser.me/")
+//                .addConverterFactory(GsonConverterFactory.create(gson))
+//                .build();
 
         populateUsers();
-
     }
 
     private void initViews() {
@@ -89,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void populateUsers() {
-        Call<RandomUsers> randomUsersCall = getRandomUserService().getRandomUsers(10);
+        Call<RandomUsers> randomUsersCall = randomUsersApi.getRandomUsers(10);
         randomUsersCall.enqueue(new Callback<RandomUsers>() {
             @Override
             public void onResponse(Call<RandomUsers> call, @NonNull Response<RandomUsers> response) {
@@ -107,9 +114,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public RandomUsersApi getRandomUserService(){
-        return retrofit.create(RandomUsersApi.class);
-    }
-
-
+//    public RandomUsersApi getRandomUserService(){
+//        return retrofit.create(RandomUsersApi.class);
+//    }
 }
